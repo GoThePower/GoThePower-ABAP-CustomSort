@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="utf-8"?>
+<nugget name="SORT">
+ <CLAS CLSNAME="ZCL_SORT" VERSION="1" LANGU="E" DESCRIPT="Sort" CATEGORY="00" EXPOSURE="0" STATE="1" RELEASE="0" CLSFINAL="X" CLSCCINCL="X" FIXPT="X" UNICODE="X" CLSBCCAT="00" DURATION_TYPE="0 " RISK_LEVEL="0 " ZSAPLINK_PLUGIN_MAJOR_VERSION="0 " ZSAPLINK_PLUGIN_MINOR_VERSION="1 " ZSAPLINK_PLUGIN_BUILD_VERSION="0 " ZSAPLINK_PLUGIN_INFO1="ZSAPLINK_CLASS is part of the main ZSAPLINK project --&gt; This plugin found there instead of ZSAPLINK_PLUGINS projects" ZSAPLINK_PLUGIN_INFO2="SAPLINK homepage: https://www.assembla.com/spaces/saplink/wiki" ZSAPLINK_PLUGIN_INFO3="Download from https://www.assembla.com/code/saplink/subversion/nodes" ZSAPLINK_PLUGIN_INFO4="and navigate to:  trunk -&gt; core -&gt; ZSAPLINK -&gt; CLAS -&gt; ZSAPLINK_CLASS.slnk">
+  <localImplementation>*&quot;* use this source file for the definition and implementation of
+*&quot;* local helper classes, interface definitions and type
+*&quot;* declarations</localImplementation>
+  <localTypes>*&quot;* use this source file for any type of declarations (class
+*&quot;* definitions, interfaces or type declarations) you need for
+*&quot;* components in the private section</localTypes>
+  <localMacros>*&quot;* use this source file for any macro definitions you need
+*&quot;* in the implementation part of the class</localMacros>
+  <attribute CLSNAME="ZCL_SORT" CMPNAME="MR_DATA" VERSION="1" LANGU="E" EXPOSURE="0" STATE="1" EDITORDER="1 " ATTDECLTYP="0" ATTEXPVIRT="0" TYPTYPE="3" TYPE="DATA" SRCROW1="0 " SRCCOLUMN1="0 " SRCROW2="0 " SRCCOLUMN2="0 " TYPESRC_LENG="0 "/>
+  <attribute CLSNAME="ZCL_SORT" CMPNAME="MR_SETUP" VERSION="1" LANGU="E" DESCRIPT="Sort set up" EXPOSURE="0" STATE="1" EDITORDER="2 " ATTDECLTYP="0" ATTEXPVIRT="0" TYPTYPE="3" TYPE="ZCL_SORT_SETUP" SRCROW1="0 " SRCCOLUMN1="0 " SRCROW2="0 " SRCCOLUMN2="0 " TYPESRC_LENG="0 "/>
+  <method CLSNAME="ZCL_SORT" CMPNAME="CONSTRUCTOR" VERSION="1" LANGU="E" DESCRIPT="CONSTRUCTOR" EXPOSURE="0" STATE="1" EDITORDER="1 " DISPID="0 " MTDTYPE="2" MTDDECLTYP="0" BCMTDCAT="00" BCMTDSYN="0">
+   <parameter CLSNAME="ZCL_SORT" CMPNAME="CONSTRUCTOR" SCONAME="IR_SETUP" VERSION="1" LANGU="E" DESCRIPT="Sort set up" CMPTYPE="1" MTDTYPE="2" EDITORDER="1 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="3" TYPE="ZCL_SORT_SETUP"/>
+   <source>method constructor.
+    mr_setup = ir_setup.
+  endmethod.</source>
+  </method>
+  <method CLSNAME="ZCL_SORT" CMPNAME="CUSTOM_SORT" VERSION="1" LANGU="E" DESCRIPT="Custom sort" EXPOSURE="0" STATE="1" EDITORDER="5 " DISPID="0 " MTDTYPE="0" MTDDECLTYP="0" BCMTDCAT="00" BCMTDSYN="0">
+   <parameter CLSNAME="ZCL_SORT" CMPNAME="CUSTOM_SORT" SCONAME="CT_TAB" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="1 " DISPID="0 " PARDECLTYP="2" PARPASSTYP="1" TYPTYPE="1" TYPE="ANY TABLE"/>
+   <source>method custom_sort.
+
+    field-symbols: &lt;fs_output&gt; type standard table,
+                   &lt;fs_other&gt;  type standard table.
+
+    &quot;-- Action if we have a custom sort --&quot;
+    if line_exists( mr_setup-&gt;mt_values[ custom = abap_true ] ).
+
+      &quot;-- Create a new output table, matching the target source --&quot;
+      data(lr_output) = zcl_data_ref=&gt;to_ref_empty( ct_tab ).
+      assign lr_output-&gt;* to &lt;fs_output&gt;.
+
+      &quot;-- Create a new temp table, to store the &apos;extra values&apos; --&quot;
+      data(lr_other) = zcl_data_ref=&gt;to_ref_empty( ct_tab ).
+      assign lr_other-&gt;* to &lt;fs_other&gt;.
+
+      &quot;-- Start sorting the table with the custom values --&quot;
+      loop at mr_setup-&gt;mt_values[ custom = abap_true ]-values into data(lv_value).
+
+        &quot;-- Find all the matching values for the sort
+        loop at ct_tab assigning field-symbol(&lt;fs_data&gt;).
+
+          &quot;-- Retreive the field value --&quot;
+          assign component mr_setup-&gt;mt_values[ custom = abap_true ]-field of structure &lt;fs_data&gt; to field-symbol(&lt;fs_field&gt;).
+          check &lt;fs_field&gt; is assigned.
+
+          &quot;-- Store the values --&quot;
+          if &lt;fs_field&gt; eq lv_value.
+            append &lt;fs_data&gt; to &lt;fs_output&gt;.
+          else.
+            &quot;-- If the value is not the current value, cache the result --&quot;
+            append &lt;fs_data&gt; to &lt;fs_other&gt;.
+          endif.
+        endloop.
+
+        &quot;-- Refresh the table --&quot;
+        ct_tab = &lt;fs_other&gt;.
+        clear &lt;fs_other&gt;.
+      endloop.
+
+      &quot;-- Append the values that where not defined to the output --&quot;
+      append lines of ct_tab to &lt;fs_output&gt;.
+
+      &quot;-- Restore the result --&quot;
+      ct_tab = &lt;fs_output&gt;.
+
+    endif.
+
+  endmethod.</source>
+  </method>
+  <method CLSNAME="ZCL_SORT" CMPNAME="GO" VERSION="1" LANGU="E" DESCRIPT="Sort" EXPOSURE="2" STATE="1" EDITORDER="2 " DISPID="0 " MTDTYPE="0" MTDDECLTYP="1" BCMTDCAT="00" BCMTDSYN="0">
+   <parameter CLSNAME="ZCL_SORT" CMPNAME="GO" SCONAME="IR_SORT" VERSION="1" LANGU="E" DESCRIPT="Sort set up" CMPTYPE="1" MTDTYPE="0" EDITORDER="1 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="3" TYPE="ZCL_SORT_SETUP"/>
+   <parameter CLSNAME="ZCL_SORT" CMPNAME="GO" SCONAME="RR_RESULT" VERSION="1" LANGU="E" DESCRIPT="Sort result" CMPTYPE="1" MTDTYPE="0" EDITORDER="2 " DISPID="0 " PARDECLTYP="3" PARPASSTYP="0" TYPTYPE="3" TYPE="ZCL_SORT"/>
+   <source>method go.
+
+    field-symbols: &lt;fs_tab&gt;    type any table.
+
+    &quot;-- Make sure we are dealing with a bound object --&quot;
+    if ir_sort is bound.
+
+      &quot;-- Internal refrence --&quot;
+      rr_result = new #( ir_sort ).
+
+      &quot;-- Retrieve the data --&quot;
+      assign ir_sort-&gt;mr_table-&gt;* to &lt;fs_tab&gt;.
+
+      &quot;-- Standard sort: Asc or desc
+      rr_result-&gt;standard_sort( changing ct_tab = &lt;fs_tab&gt; ).
+
+      &quot;-- Custom sort based on values --&quot;
+      rr_result-&gt;custom_sort( changing ct_tab = &lt;fs_tab&gt; ).
+
+      &quot;-- Repack the refernce, and return the reference --&quot;
+      rr_result-&gt;mr_data = zcl_data_ref=&gt;to_ref( &lt;fs_tab&gt; ).
+    endif.
+
+  endmethod.</source>
+  </method>
+  <method CLSNAME="ZCL_SORT" CMPNAME="STANDARD_SORT" VERSION="1" LANGU="E" DESCRIPT="Standard sort" EXPOSURE="0" STATE="1" EDITORDER="4 " DISPID="0 " MTDTYPE="0" MTDDECLTYP="0" BCMTDCAT="00" BCMTDSYN="0">
+   <parameter CLSNAME="ZCL_SORT" CMPNAME="STANDARD_SORT" SCONAME="CT_TAB" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="1 " DISPID="0 " PARDECLTYP="2" PARPASSTYP="1" TYPTYPE="1" TYPE="ANY TABLE"/>
+   <source>method standard_sort.
+
+    &quot;-- Build the dynamic sort table --&quot;
+    data(lt_order) = value abap_sortorder_tab( for sort in mr_setup-&gt;mt_values where ( values is initial ) ( name = sort-field
+                                                                                                             descending = sort-desc ) ).
+
+    &quot;-- Sort the table --&quot;
+    sort ct_tab by (lt_order).
+
+  endmethod.</source>
+  </method>
+  <method CLSNAME="ZCL_SORT" CMPNAME="VALUE" VERSION="1" LANGU="E" DESCRIPT="Returns the result" EXPOSURE="2" STATE="1" EDITORDER="3 " DISPID="0 " MTDTYPE="0" MTDDECLTYP="0" BCMTDCAT="00" BCMTDSYN="0">
+   <parameter CLSNAME="ZCL_SORT" CMPNAME="VALUE" SCONAME="VALUE" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="1 " DISPID="0 " PARDECLTYP="1" PARPASSTYP="1" TYPTYPE="1" TYPE="ANY"/>
+   <source>method value.
+    &quot;-- Unpack the reference --&quot;
+    zcl_data_ref=&gt;to_source( exporting ir_data = mr_data importing value = value ).
+  endmethod.</source>
+  </method>
+ </CLAS>
+ <CLAS CLSNAME="ZCL_SORT_SETUP" VERSION="1" LANGU="E" DESCRIPT="Sort set up" CATEGORY="00" EXPOSURE="2" STATE="1" RELEASE="0" CLSFINAL="X" CLSCCINCL="X" FIXPT="X" UNICODE="X" CLSBCCAT="00" DURATION_TYPE="0 " RISK_LEVEL="0 " ZSAPLINK_PLUGIN_MAJOR_VERSION="0 " ZSAPLINK_PLUGIN_MINOR_VERSION="1 " ZSAPLINK_PLUGIN_BUILD_VERSION="0 " ZSAPLINK_PLUGIN_INFO1="ZSAPLINK_CLASS is part of the main ZSAPLINK project --&gt; This plugin found there instead of ZSAPLINK_PLUGINS projects" ZSAPLINK_PLUGIN_INFO2="SAPLINK homepage: https://www.assembla.com/spaces/saplink/wiki" ZSAPLINK_PLUGIN_INFO3="Download from https://www.assembla.com/code/saplink/subversion/nodes" ZSAPLINK_PLUGIN_INFO4="and navigate to:  trunk -&gt; core -&gt; ZSAPLINK -&gt; CLAS -&gt; ZSAPLINK_CLASS.slnk">
+  <friends CLSNAME="ZCL_SORT_SETUP" REFCLSNAME="ZCL_SORT" FRIENDTYPE="0" VERSION="1" STATE="1"/>
+  <localImplementation>*&quot;* use this source file for the definition and implementation of
+*&quot;* local helper classes, interface definitions and type
+*&quot;* declarations</localImplementation>
+  <localTypes>*&quot;* use this source file for any type of declarations (class
+*&quot;* definitions, interfaces or type declarations) you need for
+*&quot;* components in the private section</localTypes>
+  <localMacros>*&quot;* use this source file for any macro definitions you need
+*&quot;* in the implementation part of the class</localMacros>
+  <typeUsage CLSNAME="ZCL_SORT_SETUP" TYPEGROUP="ABAP" VERSION="1" TPUTYPE="0" IMPLICIT="X"/>
+  <forwardDeclaration>ABAP</forwardDeclaration>
+  <attribute CLSNAME="ZCL_SORT_SETUP" CMPNAME="MR_TABLE" VERSION="1" LANGU="E" EXPOSURE="0" STATE="1" EDITORDER="1 " ATTDECLTYP="0" ATTEXPVIRT="0" TYPTYPE="3" TYPE="DATA" SRCROW1="0 " SRCCOLUMN1="0 " SRCROW2="0 " SRCCOLUMN2="0 " TYPESRC_LENG="0 "/>
+  <attribute CLSNAME="ZCL_SORT_SETUP" CMPNAME="MT_VALUES" VERSION="1" LANGU="E" DESCRIPT="Sort" EXPOSURE="0" STATE="1" EDITORDER="2 " ATTDECLTYP="0" ATTEXPVIRT="0" TYPTYPE="1" TYPE="ZCRM_T_SORT_VALUES" SRCROW1="0 " SRCCOLUMN1="0 " SRCROW2="0 " SRCCOLUMN2="0 " TYPESRC_LENG="0 "/>
+  <method CLSNAME="ZCL_SORT_SETUP" CMPNAME="CONSTRUCTOR" VERSION="1" LANGU="E" DESCRIPT="CONSTRUCTOR" EXPOSURE="2" STATE="1" EDITORDER="1 " DISPID="0 " MTDTYPE="2" MTDDECLTYP="0" BCMTDCAT="00" BCMTDSYN="0">
+   <parameter CLSNAME="ZCL_SORT_SETUP" CMPNAME="CONSTRUCTOR" SCONAME="IT_TAB" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="2" EDITORDER="1 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="ANY TABLE"/>
+   <source>method constructor.
+    mr_table = zcl_data_ref=&gt;to_ref( it_tab ).
+  endmethod.</source>
+  </method>
+  <method CLSNAME="ZCL_SORT_SETUP" CMPNAME="CUSTOM_SORT" VERSION="1" LANGU="E" DESCRIPT="settings" EXPOSURE="2" STATE="1" EDITORDER="2 " DISPID="0 " MTDTYPE="0" MTDDECLTYP="0" MTDNEWEXC="X" BCMTDCAT="00" BCMTDSYN="0">
+   <parameter CLSNAME="ZCL_SORT_SETUP" CMPNAME="CUSTOM_SORT" SCONAME="IS_OPTIONS" VERSION="1" LANGU="E" DESCRIPT="Table values" CMPTYPE="1" MTDTYPE="0" EDITORDER="1 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="ZCRM_S_SORT_VALUES"/>
+   <parameter CLSNAME="ZCL_SORT_SETUP" CMPNAME="CUSTOM_SORT" SCONAME="RR_SETUP" VERSION="1" LANGU="E" DESCRIPT="Sort set up" CMPTYPE="1" MTDTYPE="0" EDITORDER="2 " DISPID="0 " PARDECLTYP="3" PARPASSTYP="0" TYPTYPE="3" TYPE="ZCL_SORT_SETUP"/>
+   <exception CLSNAME="ZCL_SORT_SETUP" CMPNAME="CUSTOM_SORT" SCONAME="ZCX_SORT_HANDLER" VERSION="1" LANGU="E" DESCRIPT="Sort handler" MTDTYPE="0" EDITORDER="1 "/>
+   <source>method custom_sort.
+
+    validate( is_options ).
+
+    append value zcrm_s_sort_values( field = |{ is_options-field case = upper }| values = is_options-values custom = abap_true ) to mt_values.
+
+    rr_setup = me.
+  endmethod.</source>
+  </method>
+  <method CLSNAME="ZCL_SORT_SETUP" CMPNAME="STANDARD_SORT" VERSION="1" LANGU="E" EXPOSURE="2" STATE="1" EDITORDER="4 " DISPID="0 " MTDTYPE="0" MTDDECLTYP="0" MTDNEWEXC="X" BCMTDCAT="00" BCMTDSYN="0">
+   <parameter CLSNAME="ZCL_SORT_SETUP" CMPNAME="STANDARD_SORT" SCONAME="FIELD" VERSION="1" LANGU="E" DESCRIPT="30 Characters" CMPTYPE="1" MTDTYPE="0" EDITORDER="1 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="CHAR30"/>
+   <parameter CLSNAME="ZCL_SORT_SETUP" CMPNAME="STANDARD_SORT" SCONAME="ASC" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="2 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="ABAP_BOOL" PAROPTIONL="X"/>
+   <parameter CLSNAME="ZCL_SORT_SETUP" CMPNAME="STANDARD_SORT" SCONAME="DESC" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="3 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="ABAP_BOOL" PAROPTIONL="X"/>
+   <parameter CLSNAME="ZCL_SORT_SETUP" CMPNAME="STANDARD_SORT" SCONAME="RR_SETUP" VERSION="1" LANGU="E" DESCRIPT="Sort set up" CMPTYPE="1" MTDTYPE="0" EDITORDER="4 " DISPID="0 " PARDECLTYP="3" PARPASSTYP="0" TYPTYPE="3" TYPE="ZCL_SORT_SETUP"/>
+   <exception CLSNAME="ZCL_SORT_SETUP" CMPNAME="STANDARD_SORT" SCONAME="ZCX_SORT_HANDLER" VERSION="1" LANGU="E" DESCRIPT="Sort handler" MTDTYPE="0" EDITORDER="1 "/>
+   <source>method standard_sort.
+
+    validate( value #( field = field ) ).
+
+    append value zcrm_s_sort_values( field = |{ field case = upper }| asc = asc desc = desc ) to mt_values.
+
+  endmethod.</source>
+  </method>
+  <method CLSNAME="ZCL_SORT_SETUP" CMPNAME="VALIDATE" VERSION="1" LANGU="E" DESCRIPT="Validate the options" EXPOSURE="0" STATE="1" EDITORDER="3 " DISPID="0 " MTDTYPE="0" MTDDECLTYP="0" MTDNEWEXC="X" BCMTDCAT="00" BCMTDSYN="0">
+   <parameter CLSNAME="ZCL_SORT_SETUP" CMPNAME="VALIDATE" SCONAME="IS_OPTIONS" VERSION="1" LANGU="E" DESCRIPT="Sort" CMPTYPE="1" MTDTYPE="0" EDITORDER="1 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="ZCRM_S_SORT_VALUES"/>
+   <exception CLSNAME="ZCL_SORT_SETUP" CMPNAME="VALIDATE" SCONAME="ZCX_SORT_HANDLER" VERSION="1" LANGU="E" DESCRIPT="Sort handler" MTDTYPE="0" EDITORDER="1 "/>
+   <source>method validate.
+
+    data(lr_ref) = cast cl_abap_tabledescr( cl_abap_typedescr=&gt;describe_by_data_ref( mr_table ) ).
+
+    data(lr_struct) = cast cl_abap_structdescr( lr_ref-&gt;get_table_line_type( ) ).
+
+    data(lt_fields) = lr_struct-&gt;get_included_view( ).
+
+    check not line_exists( lt_fields[ name = |{ is_options-field case = upper }| ] ).
+
+    raise exception type zcx_sort_handler
+      exporting
+        text = |Invalid field &apos;{ is_options-field }&apos; provided, this field does not exist in structure { lr_struct-&gt;get_relative_name( ) }|.
+
+  endmethod.</source>
+  </method>
+ </CLAS>
+ <CLAS CLSNAME="ZCL_DATA_REF" VERSION="1" LANGU="E" DESCRIPT="Data ref" CATEGORY="00" EXPOSURE="2" STATE="1" RELEASE="0" CLSFINAL="X" CLSCCINCL="X" FIXPT="X" UNICODE="X" CLSBCCAT="00" DURATION_TYPE="0 " RISK_LEVEL="0 " ZSAPLINK_PLUGIN_MAJOR_VERSION="0 " ZSAPLINK_PLUGIN_MINOR_VERSION="1 " ZSAPLINK_PLUGIN_BUILD_VERSION="0 " ZSAPLINK_PLUGIN_INFO1="ZSAPLINK_CLASS is part of the main ZSAPLINK project --&gt; This plugin found there instead of ZSAPLINK_PLUGINS projects" ZSAPLINK_PLUGIN_INFO2="SAPLINK homepage: https://www.assembla.com/spaces/saplink/wiki" ZSAPLINK_PLUGIN_INFO3="Download from https://www.assembla.com/code/saplink/subversion/nodes" ZSAPLINK_PLUGIN_INFO4="and navigate to:  trunk -&gt; core -&gt; ZSAPLINK -&gt; CLAS -&gt; ZSAPLINK_CLASS.slnk">
+  <localImplementation>*&quot;* use this source file for the definition and implementation of
+*&quot;* local helper classes, interface definitions and type
+*&quot;* declarations</localImplementation>
+  <localTypes>*&quot;* use this source file for any type of declarations (class
+*&quot;* definitions, interfaces or type declarations) you need for
+*&quot;* components in the private section</localTypes>
+  <localMacros>*&quot;* use this source file for any macro definitions you need
+*&quot;* in the implementation part of the class</localMacros>
+  <method CLSNAME="ZCL_DATA_REF" CMPNAME="TO_LINE_TYPE" VERSION="1" LANGU="E" EXPOSURE="2" STATE="1" EDITORDER="3 " DISPID="0 " MTDTYPE="0" MTDDECLTYP="1" BCMTDCAT="00" BCMTDSYN="0">
+   <parameter CLSNAME="ZCL_DATA_REF" CMPNAME="TO_LINE_TYPE" SCONAME="IT_TAB" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="1 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="ANY TABLE"/>
+   <parameter CLSNAME="ZCL_DATA_REF" CMPNAME="TO_LINE_TYPE" SCONAME="RR_LINE" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="2 " DISPID="0 " PARDECLTYP="3" PARPASSTYP="0" TYPTYPE="3" TYPE="DATA"/>
+   <source>method to_line_type.
+    CREATE DATA rr_line like line of it_tab.
+  endmethod.</source>
+  </method>
+  <method CLSNAME="ZCL_DATA_REF" CMPNAME="TO_REF" VERSION="1" LANGU="E" EXPOSURE="2" STATE="1" EDITORDER="1 " DISPID="0 " MTDTYPE="0" MTDDECLTYP="1" BCMTDCAT="00" BCMTDSYN="0">
+   <parameter CLSNAME="ZCL_DATA_REF" CMPNAME="TO_REF" SCONAME="ANY" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="1 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="ANY"/>
+   <parameter CLSNAME="ZCL_DATA_REF" CMPNAME="TO_REF" SCONAME="RR_DATA" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="2 " DISPID="0 " PARDECLTYP="3" PARPASSTYP="0" TYPTYPE="3" TYPE="DATA"/>
+   <source>method to_ref.
+    create data rr_data like any.
+    assign rr_data-&gt;* to field-symbol(&lt;fs_data&gt;).
+    &lt;fs_data&gt; = any.
+  endmethod.</source>
+  </method>
+  <method CLSNAME="ZCL_DATA_REF" CMPNAME="TO_REF_EMPTY" VERSION="1" LANGU="E" EXPOSURE="2" STATE="1" EDITORDER="4 " DISPID="0 " MTDTYPE="0" MTDDECLTYP="1" BCMTDCAT="00" BCMTDSYN="0">
+   <parameter CLSNAME="ZCL_DATA_REF" CMPNAME="TO_REF_EMPTY" SCONAME="ANY" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="1 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="ANY"/>
+   <parameter CLSNAME="ZCL_DATA_REF" CMPNAME="TO_REF_EMPTY" SCONAME="RR_DATA" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="2 " DISPID="0 " PARDECLTYP="3" PARPASSTYP="0" TYPTYPE="3" TYPE="DATA"/>
+   <source>method to_ref_empty.
+    create data rr_data like any.
+  endmethod.</source>
+  </method>
+  <method CLSNAME="ZCL_DATA_REF" CMPNAME="TO_SOURCE" VERSION="1" LANGU="E" EXPOSURE="2" STATE="1" EDITORDER="2 " DISPID="0 " MTDTYPE="0" MTDDECLTYP="1" BCMTDCAT="00" BCMTDSYN="0">
+   <parameter CLSNAME="ZCL_DATA_REF" CMPNAME="TO_SOURCE" SCONAME="IR_DATA" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="1 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="3" TYPE="DATA"/>
+   <parameter CLSNAME="ZCL_DATA_REF" CMPNAME="TO_SOURCE" SCONAME="VALUE" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="2 " DISPID="0 " PARDECLTYP="1" PARPASSTYP="1" TYPTYPE="1" TYPE="ANY"/>
+   <source>method to_source.
+    assign ir_data-&gt;* to field-symbol(&lt;fs_any&gt;).
+    value = &lt;fs_any&gt;.
+  endmethod.</source>
+  </method>
+ </CLAS>
+ <CLAS CLSNAME="ZCX_SORT_HANDLER" VERSION="1" LANGU="E" DESCRIPT="Sort handler" CATEGORY="40" EXPOSURE="2" STATE="1" RELEASE="0" CLSCCINCL="X" FIXPT="X" UNICODE="X" CLSBCCAT="00" DURATION_TYPE="0 " RISK_LEVEL="0 " ZSAPLINK_PLUGIN_MAJOR_VERSION="0 " ZSAPLINK_PLUGIN_MINOR_VERSION="1 " ZSAPLINK_PLUGIN_BUILD_VERSION="0 " ZSAPLINK_PLUGIN_INFO1="ZSAPLINK_CLASS is part of the main ZSAPLINK project --&gt; This plugin found there instead of ZSAPLINK_PLUGINS projects" ZSAPLINK_PLUGIN_INFO2="SAPLINK homepage: https://www.assembla.com/spaces/saplink/wiki" ZSAPLINK_PLUGIN_INFO3="Download from https://www.assembla.com/code/saplink/subversion/nodes" ZSAPLINK_PLUGIN_INFO4="and navigate to:  trunk -&gt; core -&gt; ZSAPLINK -&gt; CLAS -&gt; ZSAPLINK_CLASS.slnk" REFCLSNAME="CX_DYNAMIC_CHECK">
+  <localImplementation>*&quot;* use this source file for the definition and implementation of
+*&quot;* local helper classes, interface definitions and type
+*&quot;* declarations</localImplementation>
+  <localTypes>*&quot;* use this source file for any type of declarations (class
+*&quot;* definitions, interfaces or type declarations) you need for
+*&quot;* components in the private section</localTypes>
+  <localMacros>*&quot;* use this source file for any macro definitions you need
+*&quot;* in the implementation part of the class</localMacros>
+  <attribute CLSNAME="ZCX_SORT_HANDLER" CMPNAME="TEXT" VERSION="1" LANGU="E" EXPOSURE="2" STATE="1" EDITORDER="2 " ATTDECLTYP="0" ATTEXPVIRT="0" TYPTYPE="1" TYPE="STRING" SRCROW1="0 " SRCCOLUMN1="0 " SRCROW2="0 " SRCCOLUMN2="0 " TYPESRC_LENG="0 "/>
+  <attribute CLSNAME="ZCX_SORT_HANDLER" CMPNAME="ZCX_SORT_HANDLER" VERSION="1" LANGU="E" EXPOSURE="2" STATE="1" EDITORDER="1 " ATTDECLTYP="2" ATTEXPVIRT="0" TYPTYPE="1" TYPE="SOTR_CONC" SRCROW1="0 " SRCCOLUMN1="0 " SRCROW2="0 " SRCCOLUMN2="0 " LOCKED="X" TYPESRC_LENG="0 ">
+   <sotr PAKET="$TMP" CREA_LAN="E" TRALA_TYPE="1" LST_IMPORT="00000000" TRALA_VEC="00000000000000000000" CATGY_VEC="00000000000000000000" OBJID_VEC="08000000000000000000">
+    <sotrText LANGU="E" LFD_NUM="0001" FLAG_CNTXT="X" STATUS="R" VERSION="0002" LENGTH="255" TEXT="&amp;TEXT&amp;"/>
+   </sotr>
+  </attribute>
+  <inheritance CLSNAME="ZCX_SORT_HANDLER" REFCLSNAME="CX_DYNAMIC_CHECK" VERSION="1" STATE="1"/>
+ </CLAS>
+ <PROG NAME="Z_SORT" VARCL="X" SUBC="1" RMAND="001" RLOAD="E" FIXPT="X" UCCHECK="X">
+  <textPool>
+   <language SPRAS="E">
+    <textElement ID="R" ENTRY="Sorter" LENGTH="6 "/>
+   </language>
+  </textPool>
+  <source>*&amp;---------------------------------------------------------------------*
+*&amp; Report Z_SORT
+*&amp;---------------------------------------------------------------------*
+*&amp;
+*&amp;---------------------------------------------------------------------*
+report z_sort.
+
+data: lt_bapi2 type bapiret2_t.
+
+do 10 times.
+  append value bapiret2( type = &apos;E&apos; message = &apos;hhhhhh&apos; number = sy-index ) to lt_bapi2.
+enddo.
+
+do 10 times.
+  append value bapiret2( type = &apos;I&apos; message = &apos;hhhhhh&apos; number = sy-index ) to lt_bapi2.
+enddo.
+
+do 10 times.
+  append value bapiret2( type = &apos;S&apos; message = &apos;hhhhhh&apos; number = sy-index ) to lt_bapi2.
+enddo.
+
+
+data(lr_set) = new zcl_sort_setup( lt_bapi2 ).
+
+lr_set-&gt;standard_sort( field = &apos;NUMBER&apos; desc = abap_true ).
+
+lr_set-&gt;custom_sort( value #( field = &apos;TYPE&apos; values = value #( ( |I| ) ( |E| ) ) ) ).
+
+zcl_sort=&gt;go( lr_set )-&gt;value( importing value = lt_bapi2 ).
+
+return.</source>
+ </PROG>
+ <TABL TABNAME="ZCRM_S_SORT_VALUES" DDLANGUAGE="E" TABCLASS="INTTAB" DATMIN="0000000000" DATMAX="0000000000" DATAVG="0000000000" DDTEXT="Sort" AUTHCLASS="00" PROZPUFF="000" EXCLASS="4">
+  <dd09l AS4VERS="0000" SCHFELDANZ="000"/>
+  <dd03p TABNAME="ZCRM_S_SORT_VALUES" FIELDNAME="FIELD" DDLANGUAGE="E" POSITION="0001" ROLLNAME="CHAR30" ADMINFIELD="0" INTTYPE="C" INTLEN="000060" DOMNAME="CHAR30" ROUTPUTLEN="000000" HEADLEN="00" SCRLEN1="00" SCRLEN2="00" SCRLEN3="00" DATATYPE="CHAR" LENG="000030" OUTPUTLEN="000030" DECIMALS="000000" MASK="  CHARE" MASKLEN="0000" DDTEXT="30 Characters" DOMNAME3L="CHAR30" DEPTH="00" COMPTYPE="E" EXCLASS="0" DBPOSITION="0000" OUTPUTSTYLE="00" STRORLOCPOS="00"/>
+  <dd03p TABNAME="ZCRM_S_SORT_VALUES" FIELDNAME="VALUES" DDLANGUAGE="E" POSITION="0002" ROLLNAME="STRINGTAB" ADMINFIELD="0" INTLEN="000000" ROUTPUTLEN="000000" HEADLEN="00" SCRLEN1="00" SCRLEN2="00" SCRLEN3="00" DATATYPE="TTYP" LENG="000000" OUTPUTLEN="000000" DECIMALS="000000" MASK="  TTYPL" MASKLEN="0000" DDTEXT="Table with Strings" DEPTH="00" COMPTYPE="L" EXCLASS="0" DBPOSITION="0000" OUTPUTSTYLE="00" STRORLOCPOS="00"/>
+  <dd03p TABNAME="ZCRM_S_SORT_VALUES" FIELDNAME="ASC" DDLANGUAGE="E" POSITION="0003" ROLLNAME="BOOLEAN" ADMINFIELD="0" INTTYPE="C" INTLEN="000002" DOMNAME="BOOLEAN" ROUTPUTLEN="000000" HEADLEN="00" SCRLEN1="00" SCRLEN2="00" SCRLEN3="00" DATATYPE="CHAR" LENG="000001" OUTPUTLEN="000001" DECIMALS="000000" VALEXI="X" MASK="  CHARE" MASKLEN="0000" DDTEXT="Boolean Variable (X=true, -=false, space=unknown)" DOMMASTER="D" DOMNAME3L="BOOLEAN" SHLPORIGIN="F" DEPTH="00" COMPTYPE="E" EXCLASS="0" DBPOSITION="0000" OUTPUTSTYLE="00" STRORLOCPOS="00"/>
+  <dd03p TABNAME="ZCRM_S_SORT_VALUES" FIELDNAME="DESC" DDLANGUAGE="E" POSITION="0004" ROLLNAME="BOOLEAN" ADMINFIELD="0" INTTYPE="C" INTLEN="000002" DOMNAME="BOOLEAN" ROUTPUTLEN="000000" HEADLEN="00" SCRLEN1="00" SCRLEN2="00" SCRLEN3="00" DATATYPE="CHAR" LENG="000001" OUTPUTLEN="000001" DECIMALS="000000" VALEXI="X" MASK="  CHARE" MASKLEN="0000" DDTEXT="Boolean Variable (X=true, -=false, space=unknown)" DOMMASTER="D" DOMNAME3L="BOOLEAN" SHLPORIGIN="F" DEPTH="00" COMPTYPE="E" EXCLASS="0" DBPOSITION="0000" OUTPUTSTYLE="00" STRORLOCPOS="00"/>
+  <dd03p TABNAME="ZCRM_S_SORT_VALUES" FIELDNAME="CUSTOM" DDLANGUAGE="E" POSITION="0005" ROLLNAME="BOOLEAN" ADMINFIELD="0" INTTYPE="C" INTLEN="000002" DOMNAME="BOOLEAN" ROUTPUTLEN="000000" HEADLEN="00" SCRLEN1="00" SCRLEN2="00" SCRLEN3="00" DATATYPE="CHAR" LENG="000001" OUTPUTLEN="000001" DECIMALS="000000" VALEXI="X" MASK="  CHARE" MASKLEN="0000" DDTEXT="Boolean Variable (X=true, -=false, space=unknown)" DOMMASTER="D" DOMNAME3L="BOOLEAN" SHLPORIGIN="F" DEPTH="00" COMPTYPE="E" EXCLASS="0" DBPOSITION="0000" OUTPUTSTYLE="00" STRORLOCPOS="00"/>
+ </TABL>
+ <TTYP TYPENAME="ZCRM_T_SORT_VALUES" DDLANGUAGE="E" ROWTYPE="ZCRM_S_SORT_VALUES" ROWKIND="S" DATATYPE="STRU" LENG="000000" DECIMALS="000000" ACCESSMODE="T" KEYDEF="D" KEYKIND="N" KEYFDCOUNT="0000" DDTEXT="Table values" TYPELEN="000080" CTLENG="000000" CTDECIMALS="000000" OCCURS="00000"/>
+</nugget>
